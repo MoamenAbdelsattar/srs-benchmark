@@ -41,6 +41,10 @@ def catch_exceptions(func):
 def mean_bias_error(y, p):
     return np.mean(np.array(p) - np.array(y))
 
+def encounter_score(y, p):
+    # Clip probabilities to prevent log(0)
+    p = np.clip(p, 1e-15, 1 - 1e-15)
+    return np.sum(-y * np.log(p) + (1 - y) * np.log(1 - p))
 
 def rmse_matrix(df):
     tmp = df.copy()
@@ -317,6 +321,7 @@ def evaluate(y, p, df, file_name, user_id, config: Config, w_list=None):
     logloss = log_loss(y_true=y, y_pred=p, labels=[0, 1])
     rmse_bins = rmse_matrix(df)
     mbe = mean_bias_error(y, p)
+    e_score = encounter_score(y, p)
     try:
         auc = round(roc_auc_score(y_true=y, y_score=p), 6)
     except Exception:
@@ -329,6 +334,7 @@ def evaluate(y, p, df, file_name, user_id, config: Config, w_list=None):
             "ICI": round(ici, 6),
             "AUC": auc,
             "MBE": round(mbe, 6),
+            "EncounterScore": round(e_score, 6)
         },
         "user": int(user_id),
         "size": len(y),

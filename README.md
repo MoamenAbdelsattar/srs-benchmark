@@ -1,3 +1,101 @@
+# Spaced Repetition Positive Feedback Loop Hypothesis
+
+I made this branch to test a hypothesis that I made in an attempt to explain why so many Anki users complain of burnout despite making atomic cards and following all good practice instructions.
+
+## Null Hypothesis
+
+Spaced repetition is a rational method for retaining knowledge. The more a user uses spaced repetition the more knowledge they will retain. Active recall stabilizes the memory more than passive reading.
+
+## Alternate Hypothesis: Spaced Repetition Positive Feedback Loop Hypothesis
+
+The act of reading new material involves some kind of active recall. E.g. When you read an article you need to actively recall the meaning of words you encounter. If you read a medical topic you need to actively recall facts related to this topic to understand the article. When the person faces a problem in real-life (e.g. writing an article, meeting a real patient) they need to actively recall words or facts that help solve this problem.
+
+This is called *Natural Repetition*, where facts and words are actively recalled based on their significance in practice and real life. Spaced repetition creates an *Artificial Frequency*, where facts and words repeat artificially regardless of their significance in real-life problems.
+
+## Example: someone learning a language
+
+If Bob is learning a language on Anki they might spend 2 hours daily to review all due cards. They could be memorizing uncommon vocabulary. They might feel burnt out. If the 2 hours where spent in immersion and consumption of more fun material (e.g. reading, watching entertainment) they might enjoy learning the language more.
+
+## The positive feedback loop
+
+The positive feedback loop says the following:
+
+1. When someone starts using an SRS, they like how adding a card improve its retention remarkably.
+2. Due cards increase gradually, the user spends more time and energy on SRS.
+3. The user now has less time and energy available for reading and practicing.
+4. This leads to forgetting all words and facts that are not present in the SRS.
+5. This leads to the behaviour of adding too many cards to avoid forgetting.
+6. Which leads to more time and energy spent on SRS.
+7. Which leads to less time and energy available for reading and practicing.
+
+Here the loop is complete, a positive feedback loop that leads usually to burnout on Anki. Another positive feedback loop could be hypothesized for adaptive algorithms (e.g. FSRS):
+
+1. The user starts using an SRS with an adaptive algorithm. They like how adding a card improve its retention remarkably.
+2. Due cards increase gradually, the user spends more time and energy on SRS.
+3. The user now has less time and energy available for reading and practicing.
+4. Reading and practicing were contributing to retrievability of cards inside SRS (because during reading the user might encounter words and facts of cards inside the SRS).
+5. This leads to dropping retrievability of cards inside SRS.
+6. The adaptive algorithm detects this change and shortens the intervals to raise the retrievability of cards again.
+7. This leads to more time and energy spent on SRS.
+8. Which leads to less time and energy available for reading and practicing.
+
+Here the loop is complete again, but I think this loop is limited by the fact that cards themselves can remind the user of related cards, so this loop will eventually stabilize somewhere.
+
+## Related previous work
+
+[An experiment by MaiMemo](https://memodocs.maimemo.com/docs/2025_experiment) found that although FSRS-6 performs better than FSRS-3 in terms of machine learning metrics, it was inferior in terms of real-world application. This experiment might guide us to look for hidden factors that improve the user experience on SRS, rather than just trying to improve the accuracy of the algorithm. 
+
+Spaced Repetition Positive Feedback Loop Hypothesis attempts to explain the cause of this discrepancy. In terms of the hypothesis, FSRS-6 might be empowering the positive feedback loop more than FSRS-3, leading to worse user experience.
+
+## Measuring significance
+
+I think SRS should take significance of facts into consideration. For example, if a card reached a stability of 1 year, it should be suspended, because if the fact inside this card is significant the user will encounter this fact in reading and problem-solving. If the user never encountered the fact or never needed it for a whole year, the user never needed to memorize it anyway. Desired-retention should start very high for new cards (e.g. 99%) and then drop gradually to 0% (to infinity interval), increasing dependence on the significance of the card gradually.
+
+Another factor that might support retrievability of a card is its relation to other cards. For example, if a card asks me about the treatment of a disease I must actively recall the pathophysiology or the symptoms of that disease. If those facts are present in another card, this review will reinforce the retrievability of both and not the reviewed card only. An orphan card (not linked to any other card) will be least supported. An orphan card should also be deemed insignificant. 
+
+There should be some kind of "death point", where success will lead to very low desired retention (very long interval) and then suspend the card, and failure implies that the card is insignificant (because it was never encountered for a long time) and then suspend the card. This means there is no crossroads regarding the card's fate at this death point (it will always be suspended). If the next review is a death point, the card should be suspended and regarded a "retired card". That death point could be adjusted by the user depending on the priority of the subject they study.
+
+## Method to test the hypotesis
+
+I present Encounter-Score to measure *external exposure to knowledge by each user*. Encounter-Score does not represent any real quantity about the card, it is just an arbitrary value to compare which user is exposed more to knowledge outside Anki.. Encounter-Score for a review is calculated using the following formula:
+
+$E(R_i, y_i) = - y_i * \ln(R_i) + (1 - y_i) * \ln(1 - R_i)$
+
+Where $R_i$ is the retrievability at the review time, and $y_i$ is the outcome of review (1 if success and 0 if failure). Let's explore how the formula works:
+
+* If the retrivability is high (e.g. 90%) and the user succeeds, the Encounter-Score will be $-\ln(0.9)$, which is about $0.105$ (mild positive, we don't know whether the user encountered this fact outside Anki or not).
+* If the retrivability is high (e.g. 90%) and the user fails, the Encounter-Score will be $\ln(0.1)$, which is about $-2.3$ (strong negative, we strongly believe that the user did not encounter this fact outside Anki).
+* If the retrivability is low (e.g. 10%) and the user succeeds, the Encounter-Score will be $-\ln(0.1)$, which is about $2.3$ (strong positive, we strongly believe that the user encountered this fact outside Anki, which might have contributed to this unexpected recall)
+* If the retrivability is low (e.g. 10%) and the user fails, the Encounter-Score will be $\ln(0.1)$, which is about $-0.105$ (mild negative, we don't know whether the user encountered this fact outside Anki or not).
+
+I use logarithmic function instead of adding retrievability linearly to emphasize unexpected results. Encounter-Score for all reviews is calculated and summed (not averaged) per-user. Sum is used instead of mean because negative and positive values should balance each other towards 0. A high average should imply that the user spends much time practicing outside Anki OR that cards are linked and remind the user of each other. A low (negative) average should imply that the user spends no time practicing outside Anki OR that cards are isolated and do not remind the user of each other.  
+
+Optimization of FSRS parameters can make FSRS take external behaviour of the user into account while evaluating retrievability, which might lead to lower overall Encounter-Score for all users. I decided to use default parameters instead to minimize this effect.
+
+## The sample
+
+I will use anki-revlogs-10k dataset provided by Open Spaced Repetition to test my hypothesis.
+
+## Expected results
+
+According to my Spaced Repetition Positive Feedback Loop Hypothesis, Encounter-Score should correlate:
+
+1. Negatively with daily number of due cards
+2. Negatively with daily time spent reviewing
+3. Negatively with daily number of new cards added
+4. Positively with  log-loss (however, log-loss alone should not explain correlation with the previous 3 variables)
+5. Negatively with total number of reviews IF total number of reviews correlate positively with daily number of due cards. If they are unrelated, Encounter-Score should not correlate with number of reviews. 
+
+Correlation does not imply causation. Those results (if as expected) will be suggestive, but not confirmatory.
+
+## Results of my analysis
+
+I will run the benchmarks and present the results here.
+
+---
+
+*The following is the original README file from the original repository* 
+
 # SRS Benchmark
 
 ## Introduction
