@@ -43,6 +43,8 @@ def mean_bias_error(y, p):
 
 def encounter_score(y, p):
     # Clip probabilities to prevent log(0)
+    y = np.array(y)
+    p = np.array(p)
     p = np.clip(p, 1e-15, 1 - 1e-15)
     return np.sum(-y * np.log(p) + (1 - y) * np.log(1 - p))
 
@@ -322,6 +324,7 @@ def evaluate(y, p, df, file_name, user_id, config: Config, w_list=None):
     rmse_bins = rmse_matrix(df)
     mbe = mean_bias_error(y, p)
     e_score = encounter_score(y, p)
+    e_score_avg = e_score / len(y)
     try:
         auc = round(roc_auc_score(y_true=y, y_score=p), 6)
     except Exception:
@@ -334,7 +337,8 @@ def evaluate(y, p, df, file_name, user_id, config: Config, w_list=None):
             "ICI": round(ici, 6),
             "AUC": auc,
             "MBE": round(mbe, 6),
-            "EncounterScore": round(e_score, 6)
+            "EncounterScoreSum": round(e_score, 6)
+            "EncounterScoreAverage": round(e_score_avg, 6)
         },
         "user": int(user_id),
         "size": len(y),
