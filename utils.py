@@ -337,7 +337,7 @@ def evaluate(y, p, df, file_name, user_id, config: Config, w_list=None):
             "ICI": round(ici, 6),
             "AUC": auc,
             "MBE": round(mbe, 6),
-            "EncounterScoreSum": round(e_score, 6)
+            "EncounterScoreSum": round(e_score, 6),
             "EncounterScoreAverage": round(e_score_avg, 6)
         },
         "user": int(user_id),
