@@ -74,7 +74,8 @@ Optimization of FSRS parameters can make FSRS take external behaviour of the use
 
 ## The sample
 
-I will use anki-revlogs-10k dataset provided by Open Spaced Repetition to test my hypothesis.
+I used FSRS-Anki-20k dataset provided by Open Spaced Repetition to test my hypothesis (because it has [raw benchmarks files available](https://huggingface.co/datasets/open-spaced-repetition/srs-benchmark-raw), which will save me the time of calculating retrievabilities at each review). I selected `FSRS-5-dry-run.jsonl
+` since it is not optimized (which I wanted). The code changed here does not represent the method I used, because initially I intended to use anki-revlogs-10k, but I changed my plan later.
 
 ## Expected results
 
@@ -90,7 +91,11 @@ Correlation does not imply causation. Those results (if as expected) will be sug
 
 ## Results of my analysis
 
-I will run the benchmarks and present the results here.
+I made a scatter plot, which showed no correlation between Encounter-Score and average session time. Lower session time was associated with too high and too low Encounter-Score, which I think means Encounter-Score does not successfully measure how much did the user encounter facts outisde Anki. It only measures the accuracy of the algorithm, which is higher when the user used Anki more.
+
+![Scatter plot](scatter.png)
+
+I can not figure out a way to measure how much a user encounters a fact outside Anki or while reviewing related cards. My next step will be trying to simulate random encounters and studying its effect.
 
 ---
 
